@@ -11,12 +11,14 @@ public class App {
     private static final int FIRST_HAND_INDEX = 0;
     private static final int LAST_HAND_INDEX = HAND.length - 1;
 
+    private static boolean isDraw = false;
+
     public static void main(String[] args) {
         showWithNewLine(Messages.TITLE);
         showWithNewLine(Messages.JANKEN_START);
-        showInputDefine();
+        showInputDescription();
 
-        onGameStart();
+        startGame();
 
         STDIN.close();
     }
@@ -27,13 +29,8 @@ public class App {
         return random.nextInt(HAND.length);
     }
 
-    private static int getPlayerHand(boolean isDraw) {
-        if (isDraw) {
-            showWithoutNewLine(Messages.WAITING_INPUT_FOR_DRAW);
-        } else {
-            showWithoutNewLine(Messages.WAITING_INPUT);
-        }
-
+    private static int getPlayerHandIndex() {
+        showWaitingInput();
         String input = STDIN.next();
         int inputNumber = 0;
         try {
@@ -41,7 +38,7 @@ public class App {
         } catch (NumberFormatException e) {
             showWithNewLine(Messages.ENTER_NUMBER_WARN);
             showNewLine();
-            return getPlayerHand(isDraw);
+            return getPlayerHandIndex();
         }
 
         if (isCorrectRange(inputNumber)) {
@@ -49,26 +46,27 @@ public class App {
         }
         showFormattedMessage(Messages.NUMBER_MUST_BETWEEN_WARN, FIRST_HAND_INDEX, LAST_HAND_INDEX);
         showNewLine();
-        return getPlayerHand(isDraw);
+        return getPlayerHandIndex();
     }
 
-    private static void onGameStart() {
-        boolean isDraw = false;
+    private static void startGame() {
         while (!isOverMaxChallengeTimes()) {
-            int playerHand = getPlayerHand(isDraw);
+            int playerHand = getPlayerHandIndex();
             int computerHand = getComputerHand();
             showFormattedMessage(Messages.RESULT, HAND[computerHand], HAND[playerHand]);
             if (isDraw(playerHand, computerHand)) {
                 showWithNewLine(Messages.DRAW);
+                isDraw = true;
                 continue;
             }
             if (isPlayerWin(playerHand, computerHand)) {
                 showWithNewLine(Messages.WIN);
-                break;
-            } else {
-                showWithNewLine(Messages.LOSE);
+                isDraw = false;
                 break;
             }
+            showWithNewLine(Messages.LOSE);
+            isDraw = false;
+            break;
         }
     }
 
@@ -97,11 +95,19 @@ public class App {
         return false;
     }
 
-    private static void showInputDefine() {
+    private static void showInputDescription() {
         int count = 0;
         for (String str : HAND) {
             showFormattedMessage(Messages.INPUT_DEFINE, count, str);
             count++;
+        }
+    }
+
+    private static void showWaitingInput() {
+        if (isDraw) {
+            showWithoutNewLine(Messages.WAITING_INPUT_FOR_DRAW);
+        } else {
+            showWithoutNewLine(Messages.WAITING_INPUT);
         }
     }
 
